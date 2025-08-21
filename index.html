@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #141414;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            z-index: 1000;
+            transition: background 0.3s ease;
+            padding: 0 60px;
+        }
+
+        .header.scrolled {
+            background: #141414;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #e50914;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #b3b3b3;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-icon, .notifications, .profile {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .mobile-menu {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('src/hero/hero.mp4');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 500px;
+            padding: 0 60px;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-play {
+            background: white;
+            color: black;
+        }
+
+        .btn-play:hover {
+            background: rgba(255,255,255,0.8);
+        }
+
+        .btn-info {
+            background: rgba(109,109,110,0.7);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: rgba(109,109,110,0.4);
+        }
+
+        /* Movie Rows */
+        .movie-section {
+            padding: 0 60px;
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .movie-row {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movie-slider {
+            display: flex;
+            gap: 8px;
+            transition: transform 0.5s ease;
+            padding: 10px 0;
+        }
+
+        .movie-card {
+            min-width: 240px;
+            height: 135px;
+            background: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.08);
+            z-index: 10;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movie-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-poster .loading-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-poster img.loaded + .loading-placeholder {
+            opacity: 0;
+        }
+
+        .movie-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-card:hover .movie-overlay {
+            opacity: 1;
+        }
+
+        .movie-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .movie-year {
+            font-size: 12px;
+            color: #b3b3b3;
+        }
+
+        .movie-rating {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slider-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        .slider-btn.prev {
+            left: 10px;
+        }
+
+        .slider-btn.next {
+            right: 10px;
+        }
+
+        /* Video Player Modal */
+        .player-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-container {
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .player-header {
+            background: #141414;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-player {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: #000;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+
+            .hero {
+                height: 80vh;
+            }
+
+            .hero-content {
+                padding: 0 20px;
+            }
+
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .hero-description {
+                font-size: 16px;
+            }
+
+            .movie-section {
+                padding: 0 20px;
+            }
+
+            .movie-card {
+                min-width: 180px;
+                height: 101px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+
+            .player-container {
+                width: 95%;
+                max-height: 95%;
+            }
+
+            .video-container {
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 24px;
+            }
+
+            .movie-card {
+                min-width: 150px;
+                height: 84px;
+            }
+
+            .movie-title {
+                font-size: 12px;
+            }
+
+            .video-container {
+                height: 250px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Netflix-style animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Skeleton loading */
+        .skeleton {
+            background: linear-gradient(90deg, #333 25%, #444 37%, #333 63%);
+            background-size: 400% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <nav class="nav">
+            <a href="#" class="logo">NETFLIX</a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#series">TV Shows</a></li>
+                <li><a href="#movies">Movies</a></li>
+                <li><a href="#new">New & Popular</a></li>
+                <li><a href="#list">My List</a></li>
+            </ul>
+            <div class="nav-right">
+                <span class="search-icon">🔍</span>
+                <span class="notifications">🔔</span>
+                <span class="profile">👤</span>
+                <button class="mobile-menu" id="mobileMenu">☰</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+ <!-- Hero Section -->
+<section class="hero">
+  <video class="hero-video" autoplay muted loop playsinline>
+    <source src="src/hero/hero.mp4" type="video/mp4" />
+  </video>
+
+  <div class="overlay"></div>
+
+  <div class="hero-content fade-in">
+    <h1 class="hero-title">Chhaava</h1>
+    <p class="hero-description">
+      Shivaji's death sparks the Maratha-Mughal conflict. His son Sambhaji leads resistance against Aurangzeb's forces. Amid battles and intrigue, both sides face challenges in a struggle for power.
+    </p>
+    <div class="hero-buttons">
+      <button class="btn btn-play"
+        onclick="openPlayer('Stranger Things','https://streamable.com/2ooxzk')">▶️ Play</button>
+      <button class="btn btn-info">ℹ️ More Info</button>
+    </div>
+  </div>
+</section>
+
+<style>
+    /* Hero Section */
+.hero{
+  height:100vh;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;      /* left side */
+  padding:120px 60px 60px;         /* room under fixed header */
+  overflow:hidden;
+}
+
+/* Background video */
+.hero-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:-2;                       /* behind everything */
+}
+
+/* Dark gradient overlay for readability */
+.hero::after,
+.overlay{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.2) 40%, rgba(0,0,0,.85) 100%);
+  z-index:-1;
+}
+
+/* Text layer on top */
+.hero-content{
+  position:relative;
+  z-index:1;
+  max-width:520px;
+  color:#fff;
+  text-align:left;
+  text-shadow:0 2px 12px rgba(0,0,0,.6);
+}
+
+.hero-title{font-size:48px;font-weight:700;line-height:1.2;margin-bottom:15px;}
+.hero-description{font-size:18px;line-height:1.5;margin-bottom:30px;color:#ccc;}
+
+
+</style>
+    <!-- Movie Sections -->
+    <main>
+        <section class="movie-section fade-in">
+            <h2 class="section-title">Trending Now</h2>
+            <div class="movie-row">
+                <button class="slider-btn prev" onclick="slideMovies('trending', -1)">❮</button>
+                <div class="movie-slider" id="trending-slider">
+                    <!-- Movies will be populated by JavaScript -->
+                </div>
+                <button class="slider-btn next" onclick="slideMovies('trending', 1)">❯</button>
+            </div>
+        </section>
+
+        <section class="movie-section fade-in">
+            <h2 class="section-title">Netflix Originals</h2>
+            <div class="movie-row">
+                <button class="slider-btn prev" onclick="slideMovies('originals', -1)">❮</button>
+                <div class="movie-slider" id="originals-slider">
+                    <!-- Movies will be populated by JavaScript -->
+                </div>
+                <button class="slider-btn next" onclick="slideMovies('originals', 1)">❯</button>
+            </div>
+        </section>
+
+        <section class="movie-section fade-in">
+            <h2 class="section-title">Action Movies</h2>
+            <div class="movie-row">
+                <button class="slider-btn prev" onclick="slideMovies('action', -1)">❮</button>
+                <div class="movie-slider" id="action-slider">
+                    <!-- Movies will be populated by JavaScript -->
+                </div>
+                <button class="slider-btn next" onclick="slideMovies('action', 1)">❯</button>
+            </div>
+        </section>
+
+        <section class="movie-section fade-in">
+            <h2 class="section-title">Comedy Movies</h2>
+            <div class="movie-row">
+                <button class="slider-btn prev" onclick="slideMovies('comedy', -1)">❮</button>
+                <div class="movie-slider" id="comedy-slider">
+                    <!-- Movies will be populated by JavaScript -->
+                </div>
+                <button class="slider-btn next" onclick="slideMovies('comedy', 1)">❯</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Video Player Modal -->
+    <div class="player-modal" id="playerModal">
+        <div class="player-container">
+            <div class="player-header">
+                <h3 class="player-title" id="playerTitle">Movie Title</h3>
+                <button class="close-player" onclick="closePlayer()">✕</button>
+            </div>
+            <div class="video-container">
+                <iframe class="video-player" id="videoPlayer" frameborder="0" allowfullscreen allow="autoplay; fullscreen"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced movie data with poster URLs and ratings
+        const movieData = {
+            trending: [
+                { 
+                    title: "Chhaava", 
+                    year: "2025", 
+                    rating: "7.8",
+                    poster: "https://www.tarunbharat.net/Encyc/2025/2/24/chava-movie_202502241404035286_H@@IGHT_400_W@@IDTH_600.gif",
+                    videoUrl: "https://streamable.com/2ooxzk" 
+                },
+                { 
+                    title: "Aavesham", 
+                    year: "2024", 
+                    rating: "8.1",
+                    poster: "https://images.indianexpress.com/2024/05/aavesham-07052024.jpg",
+                    videoUrl: "https://streamable.com/g5z02i" 
+                },
+                { 
+                    title: "HIT: The Third Case", 
+                    year: "2025", 
+                    rating: "7.2",
+                    poster: "https://imagesvs.oneindia.com/img/2025/05/hit-3-movie-review-02-1746038532.jpg",
+                    videoUrl: "https://streamable.com/4kih9r" 
+                },
+                { 
+                    title: "Raid 2", 
+                    year: "2025", 
+                    rating: "8.3",
+                    poster: "data:image/jpeg;base64,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",
+                    videoUrl: "https://streamable.com/f62qf2" 
+                },
+                { 
+                    title: "Until Dawn", 
+                    year: "2025", 
+                    rating: "8.7",
+                    poster: "data:image/jpeg;base64,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",
+                    videoUrl: "https://streamable.com/vo13zk" 
+                },
+                { 
+                    title: "Spider-Man: No Way Home", 
+                    year: "2021", 
+                    rating: "8.4",
+                    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-6" 
+                }
+            ],
+            originals: [
+                { 
+                    title: "Squid Game", 
+                    year: "2021", 
+                    rating: "8.0",
+                    poster: "https://image.tmdb.org/t/p/w500/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-7" 
+                },
+                { 
+                    title: "Stranger Things", 
+                    year: "2016", 
+                    rating: "8.7",
+                    poster: "https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-8" 
+                },
+                { 
+                    title: "The Umbrella Academy", 
+                    year: "2019", 
+                    rating: "7.9",
+                    poster: "https://image.tmdb.org/t/p/w500/scZlQQYnDVlnpxFTxaIv2g0BWnL.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-9" 
+                },
+                { 
+                    title: "Ozark", 
+                    year: "2017", 
+                    rating: "8.4",
+                    poster: "https://image.tmdb.org/t/p/w500/m73QUZ4aAiKFIGgBTwQlbr2XDbj.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-10" 
+                },
+                { 
+                    title: "The Crown", 
+                    year: "2016", 
+                    rating: "8.7",
+                    poster: "https://image.tmdb.org/t/p/w500/1M876KPjulVwppEpldhdc8V4o68.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-11" 
+                },
+                { 
+                    title: "Dark", 
+                    year: "2017", 
+                    rating: "8.8",
+                    poster: "https://image.tmdb.org/t/p/w500/rrGFz8MYhk5DjKndGm6IoKLfkwj.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-12" 
+                }
+            ],
+            action: [
+                { 
+                    title: "John Wick: Chapter 4", 
+                    year: "2023", 
+                    rating: "7.7",
+                    poster: "https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-13" 
+                },
+                { 
+                    title: "Fast X", 
+                    year: "2023", 
+                    rating: "5.8",
+                    poster: "https://image.tmdb.org/t/p/w500/fiVW06jE7z9YnO4trhaMEdclSiC.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-14" 
+                },
+                { 
+                    title: "Mission: Impossible – Dead Reckoning Part One", 
+                    year: "2023", 
+                    rating: "7.7",
+                    poster: "https://image.tmdb.org/t/p/w500/NNxYkU70HPurnNCSiCjYAmacwm.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-15" 
+                },
+                { 
+                    title: "The Gray Man", 
+                    year: "2022", 
+                    rating: "6.5",
+                    poster: "https://image.tmdb.org/t/p/w500/5cKDNj9trIn5lLN4kcLx8kHNhx8.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-16" 
+                },
+                { 
+                    title: "Extraction 2", 
+                    year: "2023", 
+                    rating: "7.0",
+                    poster: "https://image.tmdb.org/t/p/w500/7gKI9hpEMcZUQpNgKrkDzJpbnNS.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-17" 
+                },
+                { 
+                    title: "Nobody", 
+                    year: "2021", 
+                    rating: "7.4",
+                    poster: "https://image.tmdb.org/t/p/w500/oBgWY00bEFeZ9N25wWVyuQddbAo.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-18" 
+                }
+            ],
+            comedy: [
+                { 
+                    title: "Glass Onion: A Knives Out Mystery", 
+                    year: "2022", 
+                    rating: "7.1",
+                    poster: "https://image.tmdb.org/t/p/w500/vDGr1YdrlfbU9wxTOdpf3zChmv9.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-19" 
+                },
+                { 
+                    title: "Red Notice", 
+                    year: "2021", 
+                    rating: "6.3",
+                    poster: "https://image.tmdb.org/t/p/w500/lAXONuqg41NwUMuzMiFvicDET9Y.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-20" 
+                },
+                { 
+                    title: "Don't Look Up", 
+                    year: "2021", 
+                    rating: "7.2",
+                    poster: "https://image.tmdb.org/t/p/w500/th4E1yqsE8DGpAseLiUrI60Hf8V.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-21" 
+                },
+                { 
+                    title: "Murder Mystery", 
+                    year: "2019", 
+                    rating: "6.0",
+                    poster: "https://image.tmdb.org/t/p/w500/bSyONOgTAIZYmzpYYxdqkflHyS8.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-22" 
+                },
+                { 
+                    title: "The Adam Project", 
+                    year: "2022", 
+                    rating: "6.7",
+                    poster: "https://image.tmdb.org/t/p/w500/wFjboE0aFZNbVOF05fzrka9Fqyx.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-23" 
+                },
+                { 
+                    title: "Hustle", 
+                    year: "2022", 
+                    rating: "7.3",
+                    poster: "https://image.tmdb.org/t/p/w500/uzBaHEa1QtjM8j6RrZoV1oF7lMe.jpg",
+                    videoUrl: "https://streamable.com/e/your-video-24" 
+                }
+            ]
+        };
+
+        let currentSlideIndex = {
+            trending: 0,
+            originals: 0,
+            action: 0,
+            comedy: 0
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            populateMovies();
+            initializeEventListeners();
+        });
+
+        // Populate movie rows with thumbnails
+        function populateMovies() {
+            Object.keys(movieData).forEach(category => {
+                const slider = document.getElementById(`${category}-slider`);
+                slider.innerHTML = '';
+                
+                movieData[category].forEach(movie => {
+                    const movieCard = document.createElement('div');
+                    movieCard.className = 'movie-card';
+                    movieCard.innerHTML = `
+                        <div class="movie-poster">
+                            <img src="${movie.poster}" 
+                                 alt="${movie.title}" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.opacity='1';"
+                                 onload="this.classList.add('loaded');">
+                            <div class="loading-placeholder">${movie.title}</div>
+                            <div class="movie-rating">${movie.rating}</div>
+                        </div>
+                        <div class="movie-overlay">
+                            <div class="movie-title">${movie.title}</div>
+                            <div class="movie-year">${movie.year}</div>
+                        </div>
+                    `;
+                    movieCard.onclick = () => openPlayer(movie.title, movie.videoUrl);
+                    slider.appendChild(movieCard);
+                });
+            });
+        }
+
+        // Slide movies
+        function slideMovies(category, direction) {
+            const slider = document.getElementById(`${category}-slider`);
+            const cardWidth = 248; // 240px width + 8px gap
+            const containerWidth = slider.parentElement.clientWidth;
+            const visibleCards = Math.floor(containerWidth / cardWidth);
+            const maxSlides = Math.max(0, movieData[category].length - visibleCards);
+            
+            currentSlideIndex[category] += direction;
+            
+            if (currentSlideIndex[category] < 0) {
+                currentSlideIndex[category] = 0;
+            } else if (currentSlideIndex[category] > maxSlides) {
+                currentSlideIndex[category] = maxSlides;
+            }
+            
+            const translateX = currentSlideIndex[category] * cardWidth;
+            slider.style.transform = `translateX(-${translateX}px)`;
+        }
+
+        // Video Player Functions
+        function openPlayer(title, videoUrl) {
+            const modal = document.getElementById('playerModal');
+            const playerTitle = document.getElementById('playerTitle');
+            const videoPlayer = document.getElementById('videoPlayer');
+            
+            playerTitle.textContent = title;
+            
+            // Convert Streamable URL to embed format
+            if (videoUrl.includes('streamable.com')) {
+                const videoId = videoUrl.split('/').pop();
+                videoPlayer.src = `https://streamable.com/e/${videoId}?autoplay=1`;
+            } else {
+                videoPlayer.src = videoUrl + (videoUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+            }
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePlayer() {
+            const modal = document.getElementById('playerModal');
+            const videoPlayer = document.getElementById('videoPlayer');
+            
+            modal.style.display = 'none';
+            videoPlayer.src = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Event Listeners
+        function initializeEventListeners() {
+            // Header scroll effect
+            window.addEventListener('scroll', function() {
+                const header = document.getElementById('header');
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+
+            // Mobile menu toggle
+            document.getElementById('mobileMenu').addEventListener('click', function() {
+                console.log('Mobile menu clicked');
+            });
+
+            // Close player on escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closePlayer();
+                }
+            });
+
+            // Close player when clicking outside
+            document.getElementById('playerModal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closePlayer();
+                }
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(event) {
+                if (document.getElementById('playerModal').style.display === 'flex') {
+                    return; // Don't handle navigation when player is open
+                }
+
+                switch(event.key) {
+                    case 'ArrowLeft':
+                        // Navigate left in current focused row
+                        event.preventDefault();
+                        break;
+                    case 'ArrowRight':
+                        // Navigate right in current focused row
+                        event.preventDefault();
+                        break;
+                }
+            });
+        }
+
+        // Image lazy loading optimization
+        function optimizeImageLoading() {
+            const images = document.querySelectorAll('.movie-poster img');
+            
+            images.forEach(img => {
+                img.loading = 'lazy'; // Native lazy loading
+                
+                // Add intersection observer for better loading control
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            if (img.dataset.src) {
+                                img.src = img.dataset.src;
+                                img.removeAttribute('data-src');
+                            }
+                            observer.unobserve(img);
+                        }
+                    });
+                }, {
+                    rootMargin: '50px'
+                });
+                
+                if (img.dataset.src) {
+                    imageObserver.observe(img);
+                }
+            });
+        }
+
+        // Search functionality
+        function initializeSearch() {
+            const searchIcon = document.querySelector('.search-icon');
+            searchIcon.addEventListener('click', function() {
+                const query = prompt('Search for movies and TV shows:');
+                if (query) {
+                    searchContent(query);
+                }
+            });
+        }
+
+        function searchContent(query) {
+            const results = [];
+            const searchTerm = query.toLowerCase();
+            
+            // Search through all categories
+            Object.keys(movieData).forEach(category => {
+                movieData[category].forEach(movie => {
+                    if (movie.title.toLowerCase().includes(searchTerm)) {
+                        results.push(movie);
+                    }
+                });
+            });
+            
+            if (results.length > 0) {
+                displaySearchResults(results, query);
+            } else {
+                alert(`No results found for "${query}"`);
+            }
+        }
+
+        function displaySearchResults(results, query) {
+            // Create a temporary search results section
+            const main = document.querySelector('main');
+            
+            // Remove any existing search results
+            const existingSearch = document.querySelector('.search-results-section');
+            if (existingSearch) {
+                existingSearch.remove();
+            }
+            
+            const searchSection = document.createElement('section');
+            searchSection.className = 'movie-section search-results-section fade-in';
+            searchSection.innerHTML = `
+                <h2 class="section-title">Search Results for "${query}" (${results.length} found)</h2>
+                <div class="movie-row">
+                    <div class="movie-slider" id="search-slider"></div>
+                </div>
+            `;
+            
+            main.insertBefore(searchSection, main.firstChild);
+            
+            // Populate search results
+            const searchSlider = document.getElementById('search-slider');
+            results.forEach(movie => {
+                const movieCard = document.createElement('div');
+                movieCard.className = 'movie-card';
+                movieCard.innerHTML = `
+                    <div class="movie-poster">
+                        <img src="${movie.poster}" 
+                             alt="${movie.title}" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.opacity='1';"
+                             onload="this.classList.add('loaded');">
+                        <div class="loading-placeholder">${movie.title}</div>
+                        <div class="movie-rating">${movie.rating}</div>
+                    </div>
+                    <div class="movie-overlay">
+                        <div class="movie-title">${movie.title}</div>
+                        <div class="movie-year">${movie.year}</div>
+                    </div>
+                `;
+                movieCard.onclick = () => openPlayer(movie.title, movie.videoUrl);
+                searchSlider.appendChild(movieCard);
+            });
+            
+            // Scroll to search results
+            searchSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Touch/Swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let currentTouchSlider = null;
+
+        document.addEventListener('touchstart', function(event) {
+            const slider = event.target.closest('.movie-slider');
+            if (slider) {
+                currentTouchSlider = slider;
+                touchStartX = event.changedTouches[0].screenX;
+            }
+        });
+
+        document.addEventListener('touchend', function(event) {
+            if (currentTouchSlider) {
+                touchEndX = event.changedTouches[0].screenX;
+                handleSwipe();
+                currentTouchSlider = null;
+            }
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold && currentTouchSlider) {
+                const sliderId = currentTouchSlider.id;
+                const category = sliderId.replace('-slider', '');
+                
+                if (diff > 0) {
+                    // Swiped left - go to next
+                    slideMovies(category, 1);
+                } else {
+                    // Swiped right - go to previous
+                    slideMovies(category, -1);
+                }
+            }
+        }
+
+        // Auto-play hero video background (optional)
+        function initializeHeroVideo() {
+            // This would add a video background to the hero section
+            // Commented out as it requires actual video files
+            /*
+            const hero = document.querySelector('.hero');
+            const heroVideo = document.createElement('video');
+            heroVideo.autoplay = true;
+            heroVideo.muted = true;
+            heroVideo.loop = true;
+            heroVideo.playsInline = true;
+            heroVideo.src = 'path/to/hero-video.mp4';
+            heroVideo.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: -1;
+            `;
+            hero.appendChild(heroVideo);
+            */
+        }
+
+        // Performance optimization: Debounce scroll events
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Enhanced scroll handler with debouncing
+        const debouncedScrollHandler = debounce(function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }, 10);
+
+        // Replace the scroll event listener with debounced version
+        window.addEventListener('scroll', debouncedScrollHandler);
+
+        // Initialize enhanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            populateMovies();
+            initializeEventListeners();
+            initializeSearch();
+            optimizeImageLoading();
+            
+            // Add random featured movie rotation
+            setInterval(() => {
+                rotateHeroContent();
+            }, 30000); // Change every 30 seconds
+        });
+
+        // Rotate hero content with different featured movies
+        function rotateHeroContent() {
+            const heroMovies = [
+                {
+                    title: "Chhava",
+                    description: "Shivaji's death sparks the Maratha-Mughal conflict. His son Sambhaji leads resistance against Aurangzeb's forces. Amid battles and intrigue, both sides face challenges in a struggle for power.",
+                    background: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+                }
+            ];
+
+            const currentHero = Math.floor(Math.random() * heroMovies.length);
+            const hero = heroMovies[currentHero];
+            
+            const heroSection = document.querySelector('.hero');
+            const heroTitle = document.querySelector('.hero-title');
+            const heroDescription = document.querySelector('.hero-description');
+            
+            // Fade out
+            heroSection.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                heroTitle.textContent = hero.title;
+                heroDescription.textContent = hero.description;
+                heroSection.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${hero.background}')`;
+                
+                // Fade in
+                heroSection.style.opacity = '1';
+            }, 500);
+        }
+
+        // Add movie card hover effects with additional info
+        function enhanceMovieCards() {
+            document.addEventListener('mouseover', function(event) {
+                const movieCard = event.target.closest('.movie-card');
+                if (movieCard) {
+                    // Add subtle animation or additional info display
+                    movieCard.style.transform = 'scale(1.08) translateZ(0)';
+                }
+            });
+
+            document.addEventListener('mouseout', function(event) {
+                const movieCard = event.target.closest('.movie-card');
+                if (movieCard) {
+                    movieCard.style.transform = 'scale(1) translateZ(0)';
+                }
+            });
+        }
+
+        // Initialize all enhanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            enhanceMovieCards();
+        });
+    </script>
+</body>
+</html>
